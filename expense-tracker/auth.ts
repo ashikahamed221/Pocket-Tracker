@@ -8,6 +8,10 @@ import { verifyPassword } from "@/src/lib/password";
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
 
+  session: {
+    strategy: "jwt",
+  },
+
   providers: [
     Credentials({
       credentials: {
@@ -31,9 +35,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
+        const email = credentials.email.trim().toLowerCase();
+        const password = credentials.password;
+
         const user = await prisma.user.findUnique({
           where: {
-            email: credentials.email.toLowerCase(),
+            email,
           },
         });
 
@@ -42,7 +49,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
 
         const isValidPassword = await verifyPassword(
-          credentials.password,
+          password,
           user.passwordHash
         );
 
@@ -58,4 +65,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
     }),
   ],
+
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+
+      return token;
+    },
+
+    async session({ session, token }) {
+      if (session.user && token.id) {
+        session.user.id = token.id as string;
+      }
+
+      return session;
+    },
+  },
 });
