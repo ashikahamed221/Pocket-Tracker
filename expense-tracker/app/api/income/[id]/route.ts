@@ -10,31 +10,21 @@ const updateIncomeSchema = z.object({
     .positive("Amount must be greater than 0")
     .optional(),
 
-  type: z
-    .enum(["DAILY", "MONTHLY"])
-    .optional(),
-
-  date: z
-    .coerce
-    .date()
-    .optional(),
+  date: z.coerce.date().optional(),
 
   note: z
     .string()
     .trim()
     .max(500, "Note must be less than 500 characters")
-    .nullable()
     .optional(),
 });
 
+// PATCH - Update Income
 export async function PATCH(
   request: Request,
-  context: {
-    params: Promise<{ id: string }>;
-  }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // 1. Authenticate user
     const userId = await requireAuth();
 
     if (!userId) {
@@ -47,10 +37,8 @@ export async function PATCH(
       );
     }
 
-    // 2. Get income ID
-    const { id } = await context.params;
+    const { id } = await params;
 
-    // 3. Check that income belongs to current user
     const existingIncome = await prisma.income.findFirst({
       where: {
         id,
@@ -68,10 +56,8 @@ export async function PATCH(
       );
     }
 
-    // 4. Read request body
     const body = await request.json();
 
-    // 5. Validate request
     const result = updateIncomeSchema.safeParse(body);
 
     if (!result.success) {
@@ -85,15 +71,19 @@ export async function PATCH(
       );
     }
 
-    // 6. Update income
+    const { amount, date, note } = result.data;
+
     const income = await prisma.income.update({
       where: {
         id,
       },
-      data: result.data,
+      data: {
+        ...(amount !== undefined ? { amount } : {}),
+        ...(date !== undefined ? { date } : {}),
+        ...(note !== undefined ? { note: note || null } : {}),
+      },
     });
 
-    // 7. Return updated income
     return NextResponse.json({
       success: true,
       message: "Income updated successfully",
@@ -112,17 +102,12 @@ export async function PATCH(
   }
 }
 
-
-// Delete Income
-
+// DELETE - Delete Income
 export async function DELETE(
   request: Request,
-  context: {
-    params: Promise<{ id: string }>;
-  }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // 1. Authenticate user
     const userId = await requireAuth();
 
     if (!userId) {
@@ -135,10 +120,8 @@ export async function DELETE(
       );
     }
 
-    // 2. Get income ID
-    const { id } = await context.params;
+    const { id } = await params;
 
-    // 3. Check ownership
     const existingIncome = await prisma.income.findFirst({
       where: {
         id,
@@ -156,14 +139,12 @@ export async function DELETE(
       );
     }
 
-    // 4. Delete income
     await prisma.income.delete({
       where: {
         id,
       },
     });
 
-    // 5. Return success
     return NextResponse.json({
       success: true,
       message: "Income deleted successfully",

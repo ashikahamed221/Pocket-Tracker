@@ -5,11 +5,7 @@ import { prisma } from "@/src/lib/prisma";
 import { requireAuth } from "@/src/lib/require-auth";
 
 const createIncomeSchema = z.object({
-  amount: z
-    .number()
-    .positive("Amount must be greater than 0"),
-
-  type: z.enum(["DAILY", "MONTHLY"]),
+  amount: z.number().positive("Amount must be greater than 0"),
 
   date: z.coerce.date(),
 
@@ -50,13 +46,12 @@ export async function POST(request: Request) {
       );
     }
 
-    const { amount, type, date, note } = result.data;
+    const { amount, date, note } = result.data;
 
     const income = await prisma.income.create({
       data: {
         userId,
         amount,
-        type,
         date,
         note: note || null,
       },
@@ -98,32 +93,21 @@ export async function GET(request: Request) {
       );
     }
 
-    // Read query parameters
     const { searchParams } = new URL(request.url);
 
-    const type = searchParams.get("type");
     const from = searchParams.get("from");
     const to = searchParams.get("to");
 
-    // Validate income type
-    if (type && type !== "DAILY" && type !== "MONTHLY") {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Invalid income type. Use DAILY or MONTHLY.",
-        },
-        { status: 400 }
-      );
-    }
-
-    // Validate dates
     let fromDate: Date | undefined;
     let toDate: Date | undefined;
 
+    // From date
     if (from) {
-      fromDate = new Date(`${from}T00:00:00.000Z`);
+      const parsedFromDate = new Date(
+        `${from}T00:00:00.000Z`
+      );
 
-      if (Number.isNaN(fromDate.getTime())) {
+      if (Number.isNaN(parsedFromDate.getTime())) {
         return NextResponse.json(
           {
             success: false,
@@ -132,12 +116,17 @@ export async function GET(request: Request) {
           { status: 400 }
         );
       }
+
+      fromDate = parsedFromDate;
     }
 
+    // To date
     if (to) {
-      toDate = new Date(`${to}T23:59:59.999Z`);
+      const parsedToDate = new Date(
+        `${to}T23:59:59.999Z`
+      );
 
-      if (Number.isNaN(toDate.getTime())) {
+      if (Number.isNaN(parsedToDate.getTime())) {
         return NextResponse.json(
           {
             success: false,
@@ -146,6 +135,8 @@ export async function GET(request: Request) {
           { status: 400 }
         );
       }
+
+      toDate = parsedToDate;
     }
 
     // Validate date range
@@ -159,15 +150,8 @@ export async function GET(request: Request) {
       );
     }
 
-    // Build Prisma where condition
     const where = {
       userId,
-
-      ...(type
-        ? {
-            type: type as "DAILY" | "MONTHLY",
-          }
-        : {}),
 
       ...(fromDate || toDate
         ? {
@@ -179,7 +163,6 @@ export async function GET(request: Request) {
         : {}),
     };
 
-    // Get income
     const incomes = await prisma.income.findMany({
       where,
       orderBy: {

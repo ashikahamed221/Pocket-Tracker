@@ -119,7 +119,6 @@ export const IncomeScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
   amount: 'amount',
-  type: 'type',
   date: 'date',
   note: 'note',
   createdAt: 'createdAt',

@@ -9,9 +9,7 @@
 * 🟢 You can import this file directly.
 */
 
-export const IncomeType = {
-  DAILY: 'DAILY',
-  MONTHLY: 'MONTHLY'
-} as const
 
-export type IncomeType = (typeof IncomeType)[keyof typeof IncomeType]
+
+// This file is empty because there are no enums in the schema.
+export {}

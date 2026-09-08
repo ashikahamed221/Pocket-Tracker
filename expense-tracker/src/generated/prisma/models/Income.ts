@@ -38,7 +38,6 @@ export type IncomeMinAggregateOutputType = {
   id: string | null
   userId: string | null
   amount: runtime.Decimal | null
-  type: $Enums.IncomeType | null
   date: Date | null
   note: string | null
   createdAt: Date | null
@@ -49,7 +48,6 @@ export type IncomeMaxAggregateOutputType = {
   id: string | null
   userId: string | null
   amount: runtime.Decimal | null
-  type: $Enums.IncomeType | null
   date: Date | null
   note: string | null
   createdAt: Date | null
@@ -60,7 +58,6 @@ export type IncomeCountAggregateOutputType = {
   id: number
   userId: number
   amount: number
-  type: number
   date: number
   note: number
   createdAt: number
@@ -81,7 +78,6 @@ export type IncomeMinAggregateInputType = {
   id?: true
   userId?: true
   amount?: true
-  type?: true
   date?: true
   note?: true
   createdAt?: true
@@ -92,7 +88,6 @@ export type IncomeMaxAggregateInputType = {
   id?: true
   userId?: true
   amount?: true
-  type?: true
   date?: true
   note?: true
   createdAt?: true
@@ -103,7 +98,6 @@ export type IncomeCountAggregateInputType = {
   id?: true
   userId?: true
   amount?: true
-  type?: true
   date?: true
   note?: true
   createdAt?: true
@@ -201,7 +195,6 @@ export type IncomeGroupByOutputType = {
   id: string
   userId: string
   amount: runtime.Decimal
-  type: $Enums.IncomeType
   date: Date
   note: string | null
   createdAt: Date
@@ -235,7 +228,6 @@ export type IncomeWhereInput = {
   id?: Prisma.StringFilter<"Income"> | string
   userId?: Prisma.StringFilter<"Income"> | string
   amount?: Prisma.DecimalFilter<"Income"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  type?: Prisma.EnumIncomeTypeFilter<"Income"> | $Enums.IncomeType
   date?: Prisma.DateTimeFilter<"Income"> | Date | string
   note?: Prisma.StringNullableFilter<"Income"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Income"> | Date | string
@@ -247,7 +239,6 @@ export type IncomeOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   amount?: Prisma.SortOrder
-  type?: Prisma.SortOrder
   date?: Prisma.SortOrder
   note?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -262,7 +253,6 @@ export type IncomeWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.IncomeWhereInput | Prisma.IncomeWhereInput[]
   userId?: Prisma.StringFilter<"Income"> | string
   amount?: Prisma.DecimalFilter<"Income"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  type?: Prisma.EnumIncomeTypeFilter<"Income"> | $Enums.IncomeType
   date?: Prisma.DateTimeFilter<"Income"> | Date | string
   note?: Prisma.StringNullableFilter<"Income"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Income"> | Date | string
@@ -274,7 +264,6 @@ export type IncomeOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   amount?: Prisma.SortOrder
-  type?: Prisma.SortOrder
   date?: Prisma.SortOrder
   note?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -293,7 +282,6 @@ export type IncomeScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"Income"> | string
   userId?: Prisma.StringWithAggregatesFilter<"Income"> | string
   amount?: Prisma.DecimalWithAggregatesFilter<"Income"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  type?: Prisma.EnumIncomeTypeWithAggregatesFilter<"Income"> | $Enums.IncomeType
   date?: Prisma.DateTimeWithAggregatesFilter<"Income"> | Date | string
   note?: Prisma.StringNullableWithAggregatesFilter<"Income"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Income"> | Date | string
@@ -303,7 +291,6 @@ export type IncomeScalarWhereWithAggregatesInput = {
 export type IncomeCreateInput = {
   id?: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
-  type: $Enums.IncomeType
   date: Date | string
   note?: string | null
   createdAt?: Date | string
@@ -315,7 +302,6 @@ export type IncomeUncheckedCreateInput = {
   id?: string
   userId: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
-  type: $Enums.IncomeType
   date: Date | string
   note?: string | null
   createdAt?: Date | string
@@ -325,7 +311,6 @@ export type IncomeUncheckedCreateInput = {
 export type IncomeUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  type?: Prisma.EnumIncomeTypeFieldUpdateOperationsInput | $Enums.IncomeType
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -337,7 +322,6 @@ export type IncomeUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  type?: Prisma.EnumIncomeTypeFieldUpdateOperationsInput | $Enums.IncomeType
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -348,7 +332,6 @@ export type IncomeCreateManyInput = {
   id?: string
   userId: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
-  type: $Enums.IncomeType
   date: Date | string
   note?: string | null
   createdAt?: Date | string
@@ -358,7 +341,6 @@ export type IncomeCreateManyInput = {
 export type IncomeUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  type?: Prisma.EnumIncomeTypeFieldUpdateOperationsInput | $Enums.IncomeType
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -369,7 +351,6 @@ export type IncomeUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  type?: Prisma.EnumIncomeTypeFieldUpdateOperationsInput | $Enums.IncomeType
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -390,7 +371,6 @@ export type IncomeCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   amount?: Prisma.SortOrder
-  type?: Prisma.SortOrder
   date?: Prisma.SortOrder
   note?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -405,7 +385,6 @@ export type IncomeMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   amount?: Prisma.SortOrder
-  type?: Prisma.SortOrder
   date?: Prisma.SortOrder
   note?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -416,7 +395,6 @@ export type IncomeMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   amount?: Prisma.SortOrder
-  type?: Prisma.SortOrder
   date?: Prisma.SortOrder
   note?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -477,14 +455,9 @@ export type DecimalFieldUpdateOperationsInput = {
   divide?: runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
-export type EnumIncomeTypeFieldUpdateOperationsInput = {
-  set?: $Enums.IncomeType
-}
-
 export type IncomeCreateWithoutUserInput = {
   id?: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
-  type: $Enums.IncomeType
   date: Date | string
   note?: string | null
   createdAt?: Date | string
@@ -494,7 +467,6 @@ export type IncomeCreateWithoutUserInput = {
 export type IncomeUncheckedCreateWithoutUserInput = {
   id?: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
-  type: $Enums.IncomeType
   date: Date | string
   note?: string | null
   createdAt?: Date | string
@@ -534,7 +506,6 @@ export type IncomeScalarWhereInput = {
   id?: Prisma.StringFilter<"Income"> | string
   userId?: Prisma.StringFilter<"Income"> | string
   amount?: Prisma.DecimalFilter<"Income"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  type?: Prisma.EnumIncomeTypeFilter<"Income"> | $Enums.IncomeType
   date?: Prisma.DateTimeFilter<"Income"> | Date | string
   note?: Prisma.StringNullableFilter<"Income"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Income"> | Date | string
@@ -544,7 +515,6 @@ export type IncomeScalarWhereInput = {
 export type IncomeCreateManyUserInput = {
   id?: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
-  type: $Enums.IncomeType
   date: Date | string
   note?: string | null
   createdAt?: Date | string
@@ -554,7 +524,6 @@ export type IncomeCreateManyUserInput = {
 export type IncomeUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  type?: Prisma.EnumIncomeTypeFieldUpdateOperationsInput | $Enums.IncomeType
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -564,7 +533,6 @@ export type IncomeUpdateWithoutUserInput = {
 export type IncomeUncheckedUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  type?: Prisma.EnumIncomeTypeFieldUpdateOperationsInput | $Enums.IncomeType
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -574,7 +542,6 @@ export type IncomeUncheckedUpdateWithoutUserInput = {
 export type IncomeUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  type?: Prisma.EnumIncomeTypeFieldUpdateOperationsInput | $Enums.IncomeType
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -587,7 +554,6 @@ export type IncomeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   id?: boolean
   userId?: boolean
   amount?: boolean
-  type?: boolean
   date?: boolean
   note?: boolean
   createdAt?: boolean
@@ -599,7 +565,6 @@ export type IncomeSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   id?: boolean
   userId?: boolean
   amount?: boolean
-  type?: boolean
   date?: boolean
   note?: boolean
   createdAt?: boolean
@@ -611,7 +576,6 @@ export type IncomeSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   id?: boolean
   userId?: boolean
   amount?: boolean
-  type?: boolean
   date?: boolean
   note?: boolean
   createdAt?: boolean
@@ -623,14 +587,13 @@ export type IncomeSelectScalar = {
   id?: boolean
   userId?: boolean
   amount?: boolean
-  type?: boolean
   date?: boolean
   note?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type IncomeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "amount" | "type" | "date" | "note" | "createdAt" | "updatedAt", ExtArgs["result"]["income"]>
+export type IncomeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "amount" | "date" | "note" | "createdAt" | "updatedAt", ExtArgs["result"]["income"]>
 export type IncomeInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
@@ -650,7 +613,6 @@ export type $IncomePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     id: string
     userId: string
     amount: runtime.Decimal
-    type: $Enums.IncomeType
     date: Date
     note: string | null
     createdAt: Date
@@ -1082,7 +1044,6 @@ export interface IncomeFieldRefs {
   readonly id: Prisma.FieldRef<"Income", 'String'>
   readonly userId: Prisma.FieldRef<"Income", 'String'>
   readonly amount: Prisma.FieldRef<"Income", 'Decimal'>
-  readonly type: Prisma.FieldRef<"Income", 'IncomeType'>
   readonly date: Prisma.FieldRef<"Income", 'DateTime'>
   readonly note: Prisma.FieldRef<"Income", 'String'>
   readonly createdAt: Prisma.FieldRef<"Income", 'DateTime'>

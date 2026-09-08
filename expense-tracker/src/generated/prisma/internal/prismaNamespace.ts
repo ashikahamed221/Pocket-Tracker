@@ -949,7 +949,6 @@ export const IncomeScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
   amount: 'amount',
-  type: 'type',
   date: 'date',
   note: 'note',
   createdAt: 'createdAt',
@@ -1067,20 +1066,6 @@ export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel,
  * Reference to a field of type 'Decimal[]'
  */
 export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
-    
-
-
-/**
- * Reference to a field of type 'IncomeType'
- */
-export type EnumIncomeTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IncomeType'>
-    
-
-
-/**
- * Reference to a field of type 'IncomeType[]'
- */
-export type ListEnumIncomeTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IncomeType[]'>
     
 
 
