@@ -13,6 +13,10 @@ const dashboardQuerySchema = z.object({
 
 export async function GET(request: Request) {
   try {
+    // --------------------------------
+    // 1. Authentication
+    // --------------------------------
+
     const userId = await requireAuth();
 
     if (!userId) {
@@ -26,7 +30,7 @@ export async function GET(request: Request) {
     }
 
     // --------------------------------
-    // 1. Read month query parameter
+    // 2. Read month query parameter
     // --------------------------------
 
     const { searchParams } = new URL(request.url);
@@ -47,7 +51,7 @@ export async function GET(request: Request) {
     }
 
     // --------------------------------
-    // 2. Determine selected month
+    // 3. Determine selected month
     // --------------------------------
 
     const now = new Date();
@@ -63,7 +67,7 @@ export async function GET(request: Request) {
     }
 
     // --------------------------------
-    // 3. Selected month date range
+    // 4. Selected month date range
     // --------------------------------
 
     const startOfMonth = new Date(
@@ -75,8 +79,7 @@ export async function GET(request: Request) {
     );
 
     // --------------------------------
-    // 4. Check if selected month
-    //    is the current month
+    // 5. Check current month
     // --------------------------------
 
     const isCurrentMonth =
@@ -84,7 +87,7 @@ export async function GET(request: Request) {
       selectedMonth === now.getUTCMonth();
 
     // --------------------------------
-    // 5. Monthly Income
+    // 6. Monthly Income
     // --------------------------------
 
     const monthlyIncome = await prisma.income.aggregate({
@@ -101,7 +104,7 @@ export async function GET(request: Request) {
     });
 
     // --------------------------------
-    // 6. Monthly Expenses
+    // 7. Monthly Expenses
     // --------------------------------
 
     const monthlyExpenses = await prisma.expense.aggregate({
@@ -117,11 +120,9 @@ export async function GET(request: Request) {
       },
     });
 
-    // --------------------------------
-    // 7. Monthly Savings
-    // --------------------------------
-
-    const totalIncome = Number(monthlyIncome._sum.amount ?? 0);
+    const totalIncome = Number(
+      monthlyIncome._sum.amount ?? 0
+    );
 
     const totalExpenses = Number(
       monthlyExpenses._sum.amount ?? 0
@@ -196,11 +197,10 @@ export async function GET(request: Request) {
     }
 
     // --------------------------------
-    // 9. Expenses by Category
+    // 9. Get all income for selected month
     // --------------------------------
 
-    const expensesByCategory = await prisma.expense.groupBy({
-      by: ["categoryId"],
+    const incomes = await prisma.income.findMany({
       where: {
         userId,
         date: {
@@ -208,19 +208,138 @@ export async function GET(request: Request) {
           lt: startOfNextMonth,
         },
       },
-      _sum: {
+      select: {
         amount: true,
+        date: true,
       },
       orderBy: {
-        _sum: {
-          amount: "desc",
-        },
+        date: "asc",
       },
     });
 
     // --------------------------------
-    // 10. Get category names
+    // 10. Get all expenses for selected month
     // --------------------------------
+
+    const expenses = await prisma.expense.findMany({
+      where: {
+        userId,
+        date: {
+          gte: startOfMonth,
+          lt: startOfNextMonth,
+        },
+      },
+      select: {
+        amount: true,
+        date: true,
+      },
+      orderBy: {
+        date: "asc",
+      },
+    });
+
+    // --------------------------------
+    // 11. Create daily income/expense maps
+    // --------------------------------
+
+    const dailyIncomeMap = new Map<string, number>();
+    const dailyExpenseMap = new Map<string, number>();
+
+    for (const income of incomes) {
+      const dateKey = income.date.toISOString().slice(0, 10);
+
+      const currentAmount =
+        dailyIncomeMap.get(dateKey) ?? 0;
+
+      dailyIncomeMap.set(
+        dateKey,
+        currentAmount + Number(income.amount)
+      );
+    }
+
+    for (const expense of expenses) {
+      const dateKey = expense.date.toISOString().slice(0, 10);
+
+      const currentAmount =
+        dailyExpenseMap.get(dateKey) ?? 0;
+
+      dailyExpenseMap.set(
+        dateKey,
+        currentAmount + Number(expense.amount)
+      );
+    }
+
+    // --------------------------------
+    // 12. Build daily running balance
+    // --------------------------------
+
+    const dailySummary = [];
+
+    let runningBalance = 0;
+
+    const daysInMonth = new Date(
+      Date.UTC(
+        selectedYear,
+        selectedMonth + 1,
+        0
+      )
+    ).getUTCDate();
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const currentDate = new Date(
+        Date.UTC(
+          selectedYear,
+          selectedMonth,
+          day
+        )
+      );
+
+      const dateKey = currentDate
+        .toISOString()
+        .slice(0, 10);
+
+      const dailyIncome =
+        dailyIncomeMap.get(dateKey) ?? 0;
+
+      const dailyExpenses =
+        dailyExpenseMap.get(dateKey) ?? 0;
+
+      runningBalance =
+        runningBalance +
+        dailyIncome -
+        dailyExpenses;
+
+      dailySummary.push({
+        date: dateKey,
+        income: dailyIncome,
+        expenses: dailyExpenses,
+        savings: runningBalance,
+      });
+    }
+
+    // --------------------------------
+    // 13. Expenses by Category
+    // --------------------------------
+
+    const expensesByCategory =
+      await prisma.expense.groupBy({
+        by: ["categoryId"],
+        where: {
+          userId,
+          date: {
+            gte: startOfMonth,
+            lt: startOfNextMonth,
+          },
+        },
+        _sum: {
+          amount: true,
+        },
+        orderBy: {
+          _sum: {
+            amount: "desc",
+          },
+        },
+      });
 
     const categoryIds = expensesByCategory.map(
       (item) => item.categoryId
@@ -246,19 +365,16 @@ export async function GET(request: Request) {
       ])
     );
 
-    // --------------------------------
-    // 11. Build category breakdown
-    // --------------------------------
-
-    const categoryBreakdown = expensesByCategory.map((item) => ({
-      categoryId: item.categoryId,
-      categoryName:
-        categoryMap.get(item.categoryId) ?? "Unknown",
-      amount: Number(item._sum.amount ?? 0),
-    }));
+    const categoryBreakdown =
+      expensesByCategory.map((item) => ({
+        categoryId: item.categoryId,
+        categoryName:
+          categoryMap.get(item.categoryId) ?? "Unknown",
+        amount: Number(item._sum.amount ?? 0),
+      }));
 
     // --------------------------------
-    // 12. Response
+    // 14. Final response
     // --------------------------------
 
     return NextResponse.json({
@@ -276,6 +392,8 @@ export async function GET(request: Request) {
       },
 
       today,
+
+      dailySummary,
 
       expensesByCategory: categoryBreakdown,
     });
