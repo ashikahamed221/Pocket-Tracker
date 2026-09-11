@@ -25,6 +25,7 @@ import {
 
 import Sidebar from "@/src/components/dashboard/Sidebar";
 import Link from "next/link";
+import DashboardLayout from "@/src/components/dashboard/DashboardLayout";
 
 type DashboardData = {
     success: boolean;
@@ -213,8 +214,7 @@ export default function DashboardPage() {
     }));
 
     return (
-        <div className="flex min-h-screen bg-[#F8F7F2]">
-            <Sidebar />
+        <DashboardLayout>
 
             <main className="min-w-0 flex-1 p-5 pb-24 md:p-8 lg:pb-8">
                 <div className="mx-auto max-w-7xl">
@@ -654,6 +654,6 @@ export default function DashboardPage() {
                     </div>
                 </div>
             </main>
-        </div>
+        </DashboardLayout>
     );
 }

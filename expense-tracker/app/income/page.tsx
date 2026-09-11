@@ -7,6 +7,8 @@ import {
     Wallet,
 } from "lucide-react";
 
+import DashboardLayout from "@/src/components/dashboard/DashboardLayout";
+
 type Income = {
     id: string;
     amount: number;
@@ -39,6 +41,15 @@ export default function IncomePage() {
 
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
+
+    const [editingIncome, setEditingIncome] =
+        useState<Income | null>(null);
+
+    const [editAmount, setEditAmount] = useState("");
+    const [editDate, setEditDate] = useState("");
+    const [editNote, setEditNote] = useState("");
+
+    const [actionLoading, setActionLoading] = useState(false);
 
     async function fetchIncomes() {
         try {
@@ -126,7 +137,105 @@ export default function IncomePage() {
         }
     }
 
+    // edit income
+
+    async function handleEditIncome() {
+        if (!editingIncome) return;
+
+        setError("");
+        setMessage("");
+
+        try {
+            setActionLoading(true);
+
+            const response = await fetch(
+                `/api/income/${editingIncome.id}`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        amount: Number(editAmount),
+                        date: editDate,
+                        note: editNote.trim(),
+                    }),
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message || "Failed to update income"
+                );
+            }
+
+            setMessage("Income updated successfully.");
+
+            setEditingIncome(null);
+
+            await fetchIncomes();
+        } catch (error) {
+            console.error("Update income error:", error);
+
+            setError(
+                error instanceof Error
+                    ? error.message
+                    : "Failed to update income"
+            );
+        } finally {
+            setActionLoading(false);
+        }
+    }
+
+    async function handleDeleteIncome(id: string) {
+        const confirmed = window.confirm(
+            "Are you sure you want to delete this income?"
+        );
+
+        if (!confirmed) return;
+
+        setError("");
+        setMessage("");
+
+        try {
+            setActionLoading(true);
+
+            const response = await fetch(
+                `/api/income/${id}`,
+                {
+                    method: "DELETE",
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message || "Failed to delete income"
+                );
+            }
+
+            setMessage("Income deleted successfully.");
+
+            await fetchIncomes();
+        } catch (error) {
+            console.error("Delete income error:", error);
+
+            setError(
+                error instanceof Error
+                    ? error.message
+                    : "Failed to delete income"
+            );
+        } finally {
+            setActionLoading(false);
+        }
+    }
+
     return (
+
+        <DashboardLayout>
         <main className="min-h-screen bg-[#F8F7F2] p-5 pb-24 md:p-8 lg:pb-8">
             <div className="mx-auto max-w-5xl">
 
@@ -274,6 +383,117 @@ export default function IncomePage() {
                     </form>
                 </div>
 
+                {editingIncome && (
+                    <div className="mt-6 rounded-2xl border border-[#DDD9CF] bg-white p-6 shadow-sm md:p-8">
+                        <div className="mb-6">
+                            <h2 className="text-lg font-semibold text-black">
+                                Edit Income
+                            </h2>
+
+                            <p className="mt-1 text-sm text-[#777269]">
+                                Update your income transaction.
+                            </p>
+                        </div>
+
+                        <div className="space-y-5">
+                            {/* Amount */}
+                            <div>
+                                <label
+                                    htmlFor="editAmount"
+                                    className="mb-2 block text-sm font-medium text-gray-900"
+                                >
+                                    Amount
+                                </label>
+
+                                <div className="relative">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-medium text-[#6F6B63]">
+                                        ₹
+                                    </span>
+
+                                    <input
+                                        id="editAmount"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        value={editAmount}
+                                        onChange={(e) =>
+                                            setEditAmount(
+                                                e.target.value
+                                            )
+                                        }
+                                        className="w-full rounded-xl border border-[#D8D4C9] bg-white py-3 pl-9 pr-4 text-sm text-black outline-none transition focus:border-[#FF8315] focus:ring-2 focus:ring-[#FF8315]/20"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Date */}
+                            <div>
+                                <label
+                                    htmlFor="editDate"
+                                    className="mb-2 block text-sm font-medium text-gray-900"
+                                >
+                                    Date
+                                </label>
+
+                                <input
+                                    id="editDate"
+                                    type="date"
+                                    value={editDate}
+                                    onChange={(e) =>
+                                        setEditDate(e.target.value)
+                                    }
+                                    className="w-full rounded-xl border border-[#D8D4C9] bg-white px-4 py-3 text-sm text-black outline-none transition focus:border-[#FF8315] focus:ring-2 focus:ring-[#FF8315]/20"
+                                />
+                            </div>
+
+                            {/* Note */}
+                            <div>
+                                <label
+                                    htmlFor="editNote"
+                                    className="mb-2 block text-sm font-medium text-gray-900"
+                                >
+                                    Note
+                                </label>
+
+                                <input
+                                    id="editNote"
+                                    type="text"
+                                    value={editNote}
+                                    onChange={(e) =>
+                                        setEditNote(e.target.value)
+                                    }
+                                    maxLength={500}
+                                    className="w-full rounded-xl border border-[#D8D4C9] bg-white px-4 py-3 text-sm text-black outline-none transition focus:border-[#FF8315] focus:ring-2 focus:ring-[#FF8315]/20"
+                                />
+                            </div>
+
+                            {/* Buttons */}
+                            <div className="flex flex-col gap-3 sm:flex-row">
+                                <button
+                                    type="button"
+                                    disabled={actionLoading}
+                                    onClick={handleEditIncome}
+                                    className="rounded-xl bg-[#FF8315] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#FF3B0A] disabled:opacity-50"
+                                >
+                                    {actionLoading
+                                        ? "Updating..."
+                                        : "Update Income"}
+                                </button>
+
+                                <button
+                                    type="button"
+                                    disabled={actionLoading}
+                                    onClick={() =>
+                                        setEditingIncome(null)
+                                    }
+                                    className="rounded-xl border border-[#D8D4C9] bg-white px-5 py-3 text-sm font-semibold text-[#6F6B63] transition hover:bg-[#F8F7F2] disabled:opacity-50"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
                 {/* Income History */}
                 <div className="mt-6">
 
@@ -329,12 +549,50 @@ export default function IncomePage() {
                                     </div>
 
                                     {/* Amount */}
-                                    <p className="ml-4 shrink-0 font-semibold text-[#FF8315]">
-                                        +
-                                        {formatCurrency(
-                                            income.amount
-                                        )}
-                                    </p>
+                                    <div className="ml-4 flex shrink-0 items-center gap-4">
+                                        <p className="font-semibold text-[#FF8315]">
+                                            +
+                                            {formatCurrency(
+                                                income.amount
+                                            )}
+                                        </p>
+
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setEditingIncome(income);
+                                                    setEditAmount(
+                                                        income.amount.toString()
+                                                    );
+                                                    setEditDate(
+                                                        new Date(income.date)
+                                                            .toISOString()
+                                                            .split("T")[0]
+                                                    );
+                                                    setEditNote(
+                                                        income.note || ""
+                                                    );
+                                                    setMessage("");
+                                                    setError("");
+                                                }}
+                                                className="rounded-lg border border-[#D8D4C9] px-3 py-1.5 text-xs font-medium text-[#6F6B63] transition hover:border-[#FF8315] hover:text-[#FF8315]"
+                                            >
+                                                Edit
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                disabled={actionLoading}
+                                                onClick={() =>
+                                                    handleDeleteIncome(income.id)
+                                                }
+                                                className="rounded-lg border border-[#FFD2C8] px-3 py-1.5 text-xs font-medium text-[#FF3B0A] transition hover:bg-[#FFE9E3] disabled:opacity-50"
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -342,5 +600,6 @@ export default function IncomePage() {
                 </div>
             </div>
         </main>
+        </DashboardLayout>
     );
 }
