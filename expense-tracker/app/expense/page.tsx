@@ -37,6 +37,15 @@ export default function ExpensePage() {
     const [error, setError] = useState("");
     const [expenses, setExpenses] = useState<Expense[]>([]);
     const [loadingExpenses, setLoadingExpenses] = useState(true);
+    const [editingExpense, setEditingExpense] =
+        useState<Expense | null>(null);
+
+    const [editAmount, setEditAmount] = useState("");
+    const [editCategoryId, setEditCategoryId] = useState("");
+    const [editDate, setEditDate] = useState("");
+    const [editNote, setEditNote] = useState("");
+
+    const [actionLoading, setActionLoading] = useState(false);
 
     async function fetchExpenses() {
         try {
@@ -89,6 +98,103 @@ export default function ExpensePage() {
             );
         } finally {
             setLoadingCategories(false);
+        }
+    }
+
+    async function handleEditExpense() {
+        if (!editingExpense) return;
+
+        setError("");
+        setMessage("");
+
+        try {
+            setActionLoading(true);
+
+            const response = await fetch(
+                `/api/expenses/${editingExpense.id}`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        amount: Number(editAmount),
+                        categoryId: editCategoryId,
+                        date: editDate,
+                        note: editNote.trim(),
+                    }),
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message || "Failed to update expense"
+                );
+            }
+
+            setMessage("Expense updated successfully.");
+
+            setEditingExpense(null);
+
+            await fetchExpenses();
+        } catch (error) {
+            console.error("Update expense error:", error);
+
+            setError(
+                error instanceof Error
+                    ? error.message
+                    : "Failed to update expense"
+            );
+        } finally {
+            setActionLoading(false);
+        }
+    }
+
+    // Delete expenses
+
+    async function handleDeleteExpense(id: string) {
+        const confirmed = window.confirm(
+            "Are you sure you want to delete this expense?"
+        );
+
+        if (!confirmed) return;
+
+        setError("");
+        setMessage("");
+
+        try {
+            setActionLoading(true);
+
+            const response = await fetch(
+                `/api/expenses/${id}`,
+                {
+                    method: "DELETE",
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message || "Failed to delete expense"
+                );
+            }
+
+            setMessage("Expense deleted successfully.");
+
+            await fetchExpenses();
+        } catch (error) {
+            console.error("Delete expense error:", error);
+
+            setError(
+                error instanceof Error
+                    ? error.message
+                    : "Failed to delete expense"
+            );
+        } finally {
+            setActionLoading(false);
         }
     }
 
@@ -333,7 +439,152 @@ export default function ExpensePage() {
                     </div>
                 </div>
 
-                // fetch and display expenses
+                {/*  edit expense Form */}
+
+                {/* Edit Expense */}
+                {editingExpense && (
+                    <div className="mt-6 rounded-3xl border border-[#DDD9CF] bg-white p-6 shadow-sm md:p-8">
+                        <div className="mb-6">
+                            <h2 className="text-xl font-semibold text-black">
+                                Edit Expense
+                            </h2>
+
+                            <p className="mt-1 text-sm text-[#6F6B63]">
+                                Update your expense details.
+                            </p>
+                        </div>
+
+                        <div className="space-y-5">
+                            {/* Amount */}
+                            <div>
+                                <label
+                                    htmlFor="edit-amount"
+                                    className="mb-2 block text-sm font-medium text-black"
+                                >
+                                    Amount
+                                </label>
+
+                                <div className="relative">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-medium text-[#6F6B63]">
+                                        ₹
+                                    </span>
+
+                                    <input
+                                        id="edit-amount"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        value={editAmount}
+                                        onChange={(event) =>
+                                            setEditAmount(event.target.value)
+                                        }
+                                        required
+                                        className="w-full rounded-xl border border-[#D8D4C9] bg-white py-3 pl-9 pr-4 text-sm text-black outline-none transition placeholder:text-[#AAA59A] focus:border-[#FF3B0A] focus:ring-2 focus:ring-[#FF3B0A]/10"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Category */}
+                            <div>
+                                <label
+                                    htmlFor="edit-category"
+                                    className="mb-2 block text-sm font-medium text-black"
+                                >
+                                    Category
+                                </label>
+
+                                <select
+                                    id="edit-category"
+                                    value={editCategoryId}
+                                    onChange={(event) =>
+                                        setEditCategoryId(event.target.value)
+                                    }
+                                    required
+                                    className="w-full rounded-xl border border-[#D8D4C9] bg-white px-4 py-3 text-sm text-black outline-none transition focus:border-[#FF3B0A] focus:ring-2 focus:ring-[#FF3B0A]/10"
+                                >
+                                    <option value="">
+                                        Select a category
+                                    </option>
+
+                                    {categories.map((category) => (
+                                        <option
+                                            key={category.id}
+                                            value={category.id}
+                                        >
+                                            {category.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Date */}
+                            <div>
+                                <label
+                                    htmlFor="edit-date"
+                                    className="mb-2 block text-sm font-medium text-black"
+                                >
+                                    Date
+                                </label>
+
+                                <input
+                                    id="edit-date"
+                                    type="date"
+                                    value={editDate}
+                                    onChange={(event) =>
+                                        setEditDate(event.target.value)
+                                    }
+                                    required
+                                    className="w-full rounded-xl border border-[#D8D4C9] bg-white px-4 py-3 text-sm text-black outline-none transition focus:border-[#FF3B0A] focus:ring-2 focus:ring-[#FF3B0A]/10"
+                                />
+                            </div>
+
+                            {/* Note */}
+                            <div>
+                                <label
+                                    htmlFor="edit-note"
+                                    className="mb-2 block text-sm font-medium text-black"
+                                >
+                                    Note
+                                </label>
+
+                                <textarea
+                                    id="edit-note"
+                                    value={editNote}
+                                    onChange={(event) =>
+                                        setEditNote(event.target.value)
+                                    }
+                                    rows={4}
+                                    className="w-full resize-none rounded-xl border border-[#D8D4C9] bg-white px-4 py-3 text-sm text-black outline-none transition placeholder:text-[#AAA59A] focus:border-[#FF3B0A] focus:ring-2 focus:ring-[#FF3B0A]/10"
+                                />
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex flex-col gap-3 sm:flex-row">
+                                <button
+                                    type="button"
+                                    onClick={handleEditExpense}
+                                    disabled={actionLoading}
+                                    className="flex-1 rounded-xl bg-[#FF3B0A] px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-[#E83205] disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                    {actionLoading
+                                        ? "Updating..."
+                                        : "Update Expense"}
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => setEditingExpense(null)}
+                                    disabled={actionLoading}
+                                    className="flex-1 rounded-xl border border-[#D8D4C9] bg-white px-5 py-3.5 text-sm font-semibold text-[#6F6B63] transition hover:border-black hover:text-black disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* // fetch and display expenses */}
 
                 {/* Expense History */}
                 <div className="mt-8">
@@ -395,12 +646,43 @@ export default function ExpensePage() {
                                         </div>
                                     </div>
 
-                                    <p className="ml-4 shrink-0 font-semibold text-[#FF3B0A]">
-                                        -₹
-                                        {Number(expense.amount).toLocaleString(
-                                            "en-IN"
-                                        )}
-                                    </p>
+                                    <div className="ml-4 flex shrink-0 items-center gap-3">
+                                        <p className="font-semibold text-[#FF3B0A]">
+                                            -₹
+                                            {Number(expense.amount).toLocaleString("en-IN")}
+                                        </p>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setEditingExpense(expense);
+                                                setEditAmount(expense.amount.toString());
+                                                setEditCategoryId(expense.category.id);
+                                                setEditDate(
+                                                    new Date(expense.date)
+                                                        .toISOString()
+                                                        .split("T")[0]
+                                                );
+                                                setEditNote(expense.note || "");
+                                                setMessage("");
+                                                setError("");
+                                            }}
+                                            className="rounded-lg border border-[#D8D4C9] px-3 py-1.5 text-xs font-medium text-[#6F6B63] transition hover:border-[#FF8315] hover:text-[#FF8315]"
+                                        >
+                                            Edit
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            disabled={actionLoading}
+                                            onClick={() =>
+                                                handleDeleteExpense(expense.id)
+                                            }
+                                            className="rounded-lg border border-[#FFD2C8] px-3 py-1.5 text-xs font-medium text-[#FF3B0A] transition hover:bg-[#FFE9E3] disabled:opacity-50"
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
                                 </div>
                             ))}
                         </div>
