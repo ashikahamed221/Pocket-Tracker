@@ -4,12 +4,45 @@ import { z } from "zod";
 import { prisma } from "@/src/lib/prisma";
 import { requireAuth } from "@/src/lib/require-auth";
 
-const dashboardQuerySchema = z.object({
-  month: z
-    .string()
-    .regex(/^\d{4}-(0[1-9]|1[0-2])$/, "Month must be in YYYY-MM format")
-    .optional(),
-});
+const dashboardQuerySchema = z
+  .object({
+    month: z
+      .string()
+      .regex(
+        /^\d{4}-(0[1-9]|1[0-2])$/,
+        "Month must be in YYYY-MM format"
+      )
+      .optional(),
+
+    from: z
+      .string()
+      .regex(
+        /^\d{4}-\d{2}-\d{2}$/,
+        "From date must be in YYYY-MM-DD format"
+      )
+      .optional(),
+
+    to: z
+      .string()
+      .regex(
+        /^\d{4}-\d{2}-\d{2}$/,
+        "To date must be in YYYY-MM-DD format"
+      )
+      .optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.from && data.to) {
+        return data.from <= data.to;
+      }
+
+      return true;
+    },
+    {
+      message: "From date cannot be after To date",
+      path: ["from"],
+    }
+  );
 
 export async function GET(request: Request) {
   try {
@@ -37,6 +70,8 @@ export async function GET(request: Request) {
 
     const result = dashboardQuerySchema.safeParse({
       month: searchParams.get("month") ?? undefined,
+      from: searchParams.get("from") ?? undefined,
+      to: searchParams.get("to") ?? undefined,
     });
 
     if (!result.success) {
@@ -54,35 +89,66 @@ export async function GET(request: Request) {
     // 3. Determine selected month
     // --------------------------------
 
+    // --------------------------------
+    // 3. Determine selected date range
+    // --------------------------------
+
     const now = new Date();
 
     let selectedYear = now.getUTCFullYear();
     let selectedMonth = now.getUTCMonth();
 
-    if (result.data.month) {
-      const [year, month] = result.data.month.split("-");
+    let startDate: Date;
+    let endDate: Date;
 
-      selectedYear = Number(year);
-      selectedMonth = Number(month) - 1;
+    if (result.data.from && result.data.to) {
+      // Custom date range
+
+      const [fromYear, fromMonth, fromDay] =
+        result.data.from.split("-").map(Number);
+
+      const [toYear, toMonth, toDay] =
+        result.data.to.split("-").map(Number);
+
+      startDate = new Date(
+        Date.UTC(fromYear, fromMonth - 1, fromDay)
+      );
+
+      // Exclusive end date = selected To date + 1 day
+      endDate = new Date(
+        Date.UTC(toYear, toMonth - 1, toDay + 1)
+      );
+
+      selectedYear = fromYear;
+      selectedMonth = fromMonth - 1;
+    } else {
+      // Monthly range
+
+      if (result.data.month) {
+        const [year, month] =
+          result.data.month.split("-");
+
+        selectedYear = Number(year);
+        selectedMonth = Number(month) - 1;
+      }
+
+      startDate = new Date(
+        Date.UTC(selectedYear, selectedMonth, 1)
+      );
+
+      endDate = new Date(
+        Date.UTC(selectedYear, selectedMonth + 1, 1)
+      );
     }
 
-    // --------------------------------
-    // 4. Selected month date range
-    // --------------------------------
 
-    const startOfMonth = new Date(
-      Date.UTC(selectedYear, selectedMonth, 1)
-    );
-
-    const startOfNextMonth = new Date(
-      Date.UTC(selectedYear, selectedMonth + 1, 1)
-    );
 
     // --------------------------------
     // 5. Check current month
     // --------------------------------
 
     const isCurrentMonth =
+      !result.data.from &&
       selectedYear === now.getUTCFullYear() &&
       selectedMonth === now.getUTCMonth();
 
@@ -94,8 +160,8 @@ export async function GET(request: Request) {
       where: {
         userId,
         date: {
-          gte: startOfMonth,
-          lt: startOfNextMonth,
+          gte: startDate,
+          lt: endDate,
         },
       },
       _sum: {
@@ -111,8 +177,8 @@ export async function GET(request: Request) {
       where: {
         userId,
         date: {
-          gte: startOfMonth,
-          lt: startOfNextMonth,
+          gte: startDate,
+          lt: endDate,
         },
       },
       _sum: {
@@ -204,8 +270,8 @@ export async function GET(request: Request) {
       where: {
         userId,
         date: {
-          gte: startOfMonth,
-          lt: startOfNextMonth,
+          gte: startDate,
+          lt: endDate,
         },
       },
       select: {
@@ -225,8 +291,8 @@ export async function GET(request: Request) {
       where: {
         userId,
         date: {
-          gte: startOfMonth,
-          lt: startOfNextMonth,
+          gte: startDate,
+          lt: endDate,
         },
       },
       select: {
@@ -277,24 +343,10 @@ export async function GET(request: Request) {
 
     let runningBalance = 0;
 
-    const daysInMonth = new Date(
-      Date.UTC(
-        selectedYear,
-        selectedMonth + 1,
-        0
-      )
-    ).getUTCDate();
+    const dailyStart = new Date(startDate);
 
-    for (let day = 1; day <= daysInMonth; day++) {
-      const currentDate = new Date(
-        Date.UTC(
-          selectedYear,
-          selectedMonth,
-          day
-        )
-      );
-
-      const dateKey = currentDate
+    while (dailyStart < endDate) {
+      const dateKey = dailyStart
         .toISOString()
         .slice(0, 10);
 
@@ -315,6 +367,10 @@ export async function GET(request: Request) {
         expenses: dailyExpenses,
         savings: runningBalance,
       });
+
+      dailyStart.setUTCDate(
+        dailyStart.getUTCDate() + 1
+      );
     }
 
     // --------------------------------
@@ -327,8 +383,8 @@ export async function GET(request: Request) {
         where: {
           userId,
           date: {
-            gte: startOfMonth,
-            lt: startOfNextMonth,
+            gte: startDate,
+            lt: endDate,
           },
         },
         _sum: {
