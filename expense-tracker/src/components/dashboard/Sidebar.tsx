@@ -12,7 +12,10 @@ import {
     Settings,
     Wallet,
     Moon,
+    LogOut,
 } from "lucide-react";
+
+import { signOut } from "next-auth/react";
 
 const navigation = [
     {
@@ -84,11 +87,10 @@ export default function Sidebar() {
                                 <Link
                                     key={item.name}
                                     href={item.href}
-                                    className={`flex items-center gap-4 rounded-full px-4 py-3 text-sm font-medium transition ${
-                                        isActive
+                                    className={`flex items-center gap-4 rounded-full px-4 py-3 text-sm font-medium transition ${isActive
                                             ? "bg-[#FF8315] text-white"
                                             : "text-gray-300 hover:bg-white/10 hover:text-white"
-                                    }`}
+                                        }`}
                                 >
                                     <Icon className="h-5 w-5" />
 
@@ -99,7 +101,7 @@ export default function Sidebar() {
                     </nav>
 
                     {/* Bottom */}
-                    <div className="mt-auto">
+                    <div className="mt-auto space-y-2">
                         <button
                             type="button"
                             className="flex w-full items-center gap-4 rounded-full px-4 py-3 text-sm font-medium text-gray-300 transition hover:bg-white/10 hover:text-white"
@@ -108,7 +110,22 @@ export default function Sidebar() {
 
                             <span>Dark mode</span>
                         </button>
+
+                        <button
+                            type="button"
+                            onClick={() =>
+                                signOut({
+                                    callbackUrl: "/login",
+                                })
+                            }
+                            className="flex w-full items-center gap-4 rounded-full px-4 py-3 text-sm font-medium text-gray-300 transition hover:bg-white/10 hover:text-white"
+                        >
+                            <LogOut className="h-5 w-5" />
+
+                            <span>Logout</span>
+                        </button>
                     </div>
+
                 </div>
             </aside>
 
@@ -127,18 +144,16 @@ export default function Sidebar() {
                             <Link
                                 key={item.name}
                                 href={item.href}
-                                className={`flex min-w-0 flex-1 flex-col items-center justify-center gap-1 py-2 text-[11px] font-medium transition ${
-                                    isActive
+                                className={`flex min-w-0 flex-1 flex-col items-center justify-center gap-1 py-2 text-[11px] font-medium transition ${isActive
                                         ? "text-[#FF8315]"
                                         : "text-[#6F6B63]"
-                                }`}
+                                    }`}
                             >
                                 <Icon
-                                    className={`h-5 w-5 ${
-                                        isActive
+                                    className={`h-5 w-5 ${isActive
                                             ? "stroke-[2.5]"
                                             : "stroke-[1.8]"
-                                    }`}
+                                        }`}
                                 />
 
                                 <span className="truncate">

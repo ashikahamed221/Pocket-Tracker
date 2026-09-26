@@ -126,6 +126,11 @@ export default function DashboardPage() {
                 const dashboardResult =
                     await dashboardResponse.json();
 
+                if (dashboardResponse.status === 401) {
+                    window.location.href = "/login";
+                    return;
+                }
+
                 if (!dashboardResponse.ok) {
                     throw new Error(
                         dashboardResult.message ||

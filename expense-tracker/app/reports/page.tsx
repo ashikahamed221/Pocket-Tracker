@@ -3,7 +3,6 @@
 import {
     ArrowDownLeft,
     ArrowUpRight,
-    Download,
     FileSpreadsheet,
     PiggyBank,
 } from "lucide-react";
@@ -25,6 +24,8 @@ import {
 
 import DashboardLayout from "@/src/components/dashboard/DashboardLayout";
 
+import * as XLSX from "xlsx";
+
 
 const CHART_COLORS = [
     "#000000",
@@ -42,6 +43,14 @@ type ReportData = {
         expenses: number;
         savings: number;
     };
+
+    dailySummary: {
+        date: string;
+        income: number;
+        expenses: number;
+        savings: number;
+    }[];
+
 
     expensesByCategory: {
         categoryId: string;
@@ -171,6 +180,81 @@ export default function ReportsPage() {
             0
         ) ?? 0;
 
+
+
+    function downloadExcel() {
+        if (!reportData) {
+            return;
+        }
+
+        const summaryData = [
+            {
+                Metric: "Income",
+                Amount: reportData.summary.income,
+            },
+            {
+                Metric: "Expenses",
+                Amount: reportData.summary.expenses,
+            },
+            {
+                Metric: "Savings",
+                Amount: reportData.summary.savings,
+            },
+        ];
+
+        const categoryData = reportData.expensesByCategory.map(
+            (category) => ({
+                Category: category.categoryName,
+                Amount: Number(category.amount),
+            })
+        );
+
+        const dailyData = reportData.dailySummary.map(
+            (day) => ({
+                Date: day.date,
+                Income: Number(day.income),
+                Expenses: Number(day.expenses),
+                Savings: Number(day.savings),
+            })
+        );
+
+        const workbook = XLSX.utils.book_new();
+
+        const summarySheet =
+            XLSX.utils.json_to_sheet(summaryData);
+
+        const categorySheet =
+            XLSX.utils.json_to_sheet(categoryData);
+
+        const dailySheet =
+            XLSX.utils.json_to_sheet(dailyData);
+
+        XLSX.utils.book_append_sheet(
+            workbook,
+            summarySheet,
+            "Summary"
+        );
+
+        XLSX.utils.book_append_sheet(
+            workbook,
+            categorySheet,
+            "Expenses by Category"
+        );
+
+        XLSX.utils.book_append_sheet(
+            workbook,
+            dailySheet,
+            "Daily Summary"
+        );
+
+        const fileName =
+            reportMode === "custom"
+                ? `expense-report-${fromDate}-to-${toDate}.xlsx`
+                : `expense-report-${selectedMonth}.xlsx`;
+
+        XLSX.writeFile(workbook, fileName);
+    }
+
     return (
         <DashboardLayout>
             <main className="min-h-screen bg-[#F8F7F2] p-5 pb-24 md:p-8 lg:pb-8">
@@ -294,17 +378,11 @@ export default function ReportsPage() {
 
 
                         {/* Download Buttons */}
-                        <div className="mt-5 flex flex-wrap gap-3">
-                            <button
-                                type="button"
-                                className="flex items-center gap-2 rounded-xl border border-[#D8D4C9] bg-white px-4 py-2.5 text-sm font-medium text-black shadow-sm transition hover:border-[#FF8315] hover:text-[#FF8315]"
-                            >
-                                <Download className="h-4 w-4" />
-                                Download PDF
-                            </button>
+                        <div className="mt-5 flex flex-wrap gap-3">                          
 
                             <button
                                 type="button"
+                                onClick={downloadExcel}
                                 className="flex items-center gap-2 rounded-xl border border-[#D8D4C9] bg-white px-4 py-2.5 text-sm font-medium text-black shadow-sm transition hover:border-[#FF8315] hover:text-[#FF8315]"
                             >
                                 <FileSpreadsheet className="h-4 w-4" />
