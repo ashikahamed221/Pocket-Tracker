@@ -104,6 +104,108 @@ function getShortDay(date: string) {
     });
 }
 
+function DashboardSkeleton() {
+    return (
+        <DashboardLayout>
+            <main className="min-w-0 flex-1 bg-[#F8F7F2] p-5 pb-24 md:p-8 lg:pb-8">
+                <div className="mx-auto max-w-7xl">
+                    {/* Header */}
+                    <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="space-y-2">
+                            <div className="h-9 w-40 animate-pulse rounded-lg bg-[#E5E0D5]" />
+
+                            <div className="h-4 w-64 animate-pulse rounded bg-[#E5E0D5]" />
+                        </div>
+
+                        <div className="h-11 w-36 animate-pulse rounded-xl bg-[#E5E0D5]" />
+                    </div>
+
+                    {/* Summary Cards */}
+                    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                        {Array.from({ length: 4 }).map((_, index) => (
+                            <div
+                                key={index}
+                                className="rounded-2xl border border-[#DDD9CF] bg-white p-6 shadow-sm"
+                            >
+                                <div className="flex items-start justify-between">
+                                    <div className="w-full">
+                                        <div className="h-4 w-20 animate-pulse rounded bg-[#E5E0D5]" />
+
+                                        <div className="mt-7 h-8 w-32 animate-pulse rounded-lg bg-[#E5E0D5]" />
+
+                                        <div className="mt-3 h-4 w-24 animate-pulse rounded bg-[#E5E0D5]" />
+                                    </div>
+
+                                    <div className="h-11 w-11 shrink-0 animate-pulse rounded-full bg-[#E5E0D5]" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Charts */}
+                    <div className="mt-6 grid gap-5 lg:grid-cols-2">
+                        <div className="rounded-2xl border border-[#DDD9CF] bg-white p-6 shadow-sm">
+                            <div className="h-5 w-40 animate-pulse rounded bg-[#E5E0D5]" />
+
+                            <div className="mt-6 flex h-[350px] items-center justify-center">
+                                <div className="h-48 w-48 animate-pulse rounded-full border-[35px] border-[#E5E0D5]" />
+                            </div>
+                        </div>
+
+                        <div className="rounded-2xl border border-[#DDD9CF] bg-white p-6 shadow-sm">
+                            <div className="h-5 w-44 animate-pulse rounded bg-[#E5E0D5]" />
+
+                            <div className="mt-5 flex h-[350px] items-end justify-around px-4 pb-8">
+                                {[40, 70, 50, 85, 60, 75, 45].map(
+                                    (height, index) => (
+                                        <div
+                                            key={index}
+                                            className="w-8 animate-pulse rounded-t-lg bg-[#E5E0D5] sm:w-10"
+                                            style={{
+                                                height: `${height}%`,
+                                            }}
+                                        />
+                                    )
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Recent Transactions */}
+                    <div className="mt-6">
+                        <div className="mb-3 flex items-center justify-between">
+                            <div className="h-5 w-40 animate-pulse rounded bg-[#E5E0D5]" />
+
+                            <div className="h-4 w-16 animate-pulse rounded bg-[#E5E0D5]" />
+                        </div>
+
+                        <div className="space-y-3">
+                            {Array.from({ length: 3 }).map((_, index) => (
+                                <div
+                                    key={index}
+                                    className="flex items-center justify-between rounded-2xl border border-[#DDD9CF] bg-white px-5 py-4 shadow-sm"
+                                >
+                                    <div className="flex min-w-0 items-center gap-4">
+                                        <div className="h-12 w-12 shrink-0 animate-pulse rounded-full bg-[#E5E0D5]" />
+
+                                        <div className="space-y-2">
+                                            <div className="h-4 w-32 animate-pulse rounded bg-[#E5E0D5]" />
+
+                                            <div className="h-3 w-44 animate-pulse rounded bg-[#E5E0D5]" />
+                                        </div>
+                                    </div>
+
+                                    <div className="ml-4 h-5 w-24 animate-pulse rounded bg-[#E5E0D5]" />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </DashboardLayout>
+    );
+}
+
 export default function DashboardPage() {
     const [data, setData] = useState<DashboardData | null>(null);
     const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -170,15 +272,9 @@ export default function DashboardPage() {
         fetchDashboard();
     }, [selectedMonth]);
 
-    if (loading) {
-        return (
-            <main className="flex min-h-screen items-center justify-center bg-[#F8F7F2]">
-                <p className="text-sm text-[#6F6B63]">
-                    Loading dashboard...
-                </p>
-            </main>
-        );
-    }
+   if (loading) {
+    return <DashboardSkeleton />;
+}
 
     if (error) {
         return (

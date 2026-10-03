@@ -58,7 +58,7 @@ export default function Sidebar() {
             {/* =========================
                 Desktop Sidebar
             ========================== */}
-            <aside className="hidden min-h-screen w-64 shrink-0 bg-black lg:block">
+            <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 bg-black lg:block">
                 <div className="flex h-full min-h-screen flex-col px-4 py-6">
 
                     {/* Logo */}

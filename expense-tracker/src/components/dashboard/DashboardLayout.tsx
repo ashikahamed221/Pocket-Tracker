@@ -8,10 +8,10 @@ export default function DashboardLayout({
     children,
 }: DashboardLayoutProps) {
     return (
-        <div className="flex min-h-screen bg-[#F8F7F2]">
+        <div className="min-h-screen bg-[#F8F7F2]">
             <Sidebar />
 
-            <main className="flex-1">
+            <main className="min-w-0 lg:ml-64">
                 {children}
             </main>
         </div>
