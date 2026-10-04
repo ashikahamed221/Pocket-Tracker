@@ -14,6 +14,8 @@ import {
     YAxis,
 } from "recharts";
 
+import MonthPicker from "@/src/components/dashboard/MonthPicker";
+
 import {
     ArrowDownLeft,
     ArrowUpRight,
@@ -49,6 +51,10 @@ type DashboardData = {
         savings: number;
     }[];
 
+    last7Days: {
+        date: string;
+        expenses: number;
+    }[];
     expensesByCategory: {
         categoryId: string;
         categoryName: string;
@@ -272,9 +278,9 @@ export default function DashboardPage() {
         fetchDashboard();
     }, [selectedMonth]);
 
-   if (loading) {
-    return <DashboardSkeleton />;
-}
+    if (loading) {
+        return <DashboardSkeleton />;
+    }
 
     if (error) {
         return (
@@ -309,10 +315,11 @@ export default function DashboardPage() {
 
     const last7Days = availableDays.slice(-7);
 
-    const spendingData = last7Days.map((item) => ({
+    const spendingData = data.last7Days.map((item) => ({
         day: getShortDay(item.date),
         amount: item.expenses,
     }));
+
 
     return (
         <DashboardLayout>
@@ -333,19 +340,9 @@ export default function DashboardPage() {
                             </p>
                         </div>
 
-                        <input
-                            type="month"
+                        <MonthPicker
                             value={selectedMonth}
-                            onChange={(e) => {
-                                const value =
-                                    e.target.value;
-
-                                setSelectedMonth(
-                                    value ||
-                                    getCurrentMonth()
-                                );
-                            }}
-                            className="w-fit rounded-xl border border-[#D8D4C9] bg-white px-4 py-2.5 text-sm font-medium text-black outline-none transition focus:border-[#FF8315] focus:ring-2 focus:ring-[#FF8315]/20"
+                            onChange={setSelectedMonth}
                         />
                     </div>
 
@@ -592,7 +589,7 @@ export default function DashboardPage() {
                                 Last 7 days spending
                             </h2>
 
-                            <div className="mt-5 h-[350px] w-full">
+                            <div className="mt-5 h-[350px] w-full min-w-0 overflow-hidden">
                                 <ResponsiveContainer
                                     width="100%"
                                     height="100%"
@@ -602,7 +599,7 @@ export default function DashboardPage() {
                                         margin={{
                                             top: 10,
                                             right: 10,
-                                            left: -20,
+                                            left: -15,
                                             bottom: 0,
                                         }}
                                     >
@@ -616,8 +613,13 @@ export default function DashboardPage() {
                                             dataKey="day"
                                             axisLine={false}
                                             tickLine={false}
+                                            interval={0}
+                                            minTickGap={0}
+                                            tickMargin={8}
+                                            height={35}
                                             tick={{
                                                 fill: "#6F6B63",
+                                                fontSize: 12,
                                             }}
                                         />
 
@@ -630,14 +632,8 @@ export default function DashboardPage() {
                                         />
 
                                         <Tooltip
-                                            formatter={(
-                                                value
-                                            ) =>
-                                                formatCurrency(
-                                                    Number(
-                                                        value
-                                                    )
-                                                )
+                                            formatter={(value) =>
+                                                formatCurrency(Number(value))
                                             }
                                         />
 
@@ -650,7 +646,7 @@ export default function DashboardPage() {
                                                 0,
                                                 0,
                                             ]}
-                                            barSize={55}
+                                            barSize={18}
                                         />
                                     </BarChart>
                                 </ResponsiveContainer>

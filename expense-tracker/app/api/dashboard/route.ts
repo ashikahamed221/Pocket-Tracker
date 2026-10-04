@@ -374,6 +374,75 @@ export async function GET(request: Request) {
     }
 
     // --------------------------------
+    // 13. Last 7 Days Spending
+    // --------------------------------
+
+    const last7StartDate = new Date(
+      Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate() - 6
+      )
+    );
+
+    const last7EndDate = new Date(
+      Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate() + 1
+      )
+    );
+
+    const last7Expenses = await prisma.expense.findMany({
+      where: {
+        userId,
+        date: {
+          gte: last7StartDate,
+          lt: last7EndDate,
+        },
+      },
+      select: {
+        amount: true,
+        date: true,
+      },
+    });
+
+    const last7ExpenseMap = new Map<string, number>();
+
+    for (const expense of last7Expenses) {
+      const dateKey = expense.date
+        .toISOString()
+        .slice(0, 10);
+
+      const currentAmount =
+        last7ExpenseMap.get(dateKey) ?? 0;
+
+      last7ExpenseMap.set(
+        dateKey,
+        currentAmount + Number(expense.amount)
+      );
+    }
+
+    const last7Days = [];
+
+    const last7DayStart = new Date(last7StartDate);
+
+    while (last7DayStart < last7EndDate) {
+      const dateKey = last7DayStart
+        .toISOString()
+        .slice(0, 10);
+
+      last7Days.push({
+        date: dateKey,
+        expenses: last7ExpenseMap.get(dateKey) ?? 0,
+      });
+
+      last7DayStart.setUTCDate(
+        last7DayStart.getUTCDate() + 1
+      );
+    }
+
+    // --------------------------------
     // 13. Expenses by Category
     // --------------------------------
 
@@ -450,6 +519,8 @@ export async function GET(request: Request) {
       today,
 
       dailySummary,
+
+      last7Days,
 
       expensesByCategory: categoryBreakdown,
     });
