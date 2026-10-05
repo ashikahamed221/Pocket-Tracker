@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
+
 import {
     Bar,
     BarChart,
@@ -312,6 +313,8 @@ export default function ReportsPage() {
                                     }
                                     className="w-full rounded-xl border border-[#D8D4C9] bg-white px-4 py-3 text-sm text-black outline-none transition focus:border-[#FF8315] focus:ring-2 focus:ring-[#FF8315]/10"
                                 />
+
+                                
                             </div>
                         </div>
 
