@@ -187,3 +187,43 @@ export async function GET(request: Request) {
     );
   }
 }
+
+// DELETE - Delete All Income
+
+export async function DELETE() {
+    try {
+        const userId = await requireAuth();
+
+        if (!userId) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Unauthorized",
+                },
+                { status: 401 }
+            );
+        }
+
+        const result = await prisma.income.deleteMany({
+            where: {
+                userId,
+            },
+        });
+
+        return NextResponse.json({
+            success: true,
+            message: "All income deleted successfully.",
+            deletedCount: result.count,
+        });
+    } catch (error) {
+        console.error("Delete all income error:", error);
+
+        return NextResponse.json(
+            {
+                success: false,
+                message: "Failed to delete all income",
+            },
+            { status: 500 }
+        );
+    }
+}
