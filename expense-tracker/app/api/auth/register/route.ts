@@ -58,13 +58,31 @@ export async function POST(request: Request) {
 
     const passwordHash = await hashPassword(password);
 
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        passwordHash,
-      },
-    });
+  const defaultCategories = [
+  "Food",
+  "Transport",
+  "Travel & Trips",
+  "Shopping",
+];
+
+const user = await prisma.$transaction(async (tx) => {
+  const newUser = await tx.user.create({
+    data: {
+      name,
+      email,
+      passwordHash,
+    },
+  });
+
+  await tx.category.createMany({
+    data: defaultCategories.map((categoryName) => ({
+      name: categoryName,
+      userId: newUser.id,
+    })),
+  });
+
+  return newUser;
+});
 
     return NextResponse.json(
       {

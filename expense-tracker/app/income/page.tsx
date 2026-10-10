@@ -634,7 +634,7 @@ export default function IncomePage() {
                                                 </div>
 
                                                 {/* Actions */}
-                                                <div className="mt-4 flex items-center gap-2">
+                                                <div className="mt-4  flex items-center gap-2">
                                                     {/* Edit */}
                                                     <button
                                                         type="button"
@@ -678,7 +678,7 @@ export default function IncomePage() {
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
+                                     </div>
                                 ))}
                             </div>
                         )}

@@ -448,7 +448,7 @@ export default function ReportsPage() {
                             <div className="flex items-start justify-between">
                                 <div>
                                     <p className="text-sm font-medium text-[#6F6B63]">
-                                        SAVINGS
+                                        REMAINING BALANCE
                                     </p>
 
                                     <p className="mt-3 text-3xl font-semibold text-black">

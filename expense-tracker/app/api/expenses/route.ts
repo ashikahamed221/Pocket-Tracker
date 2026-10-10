@@ -246,3 +246,46 @@ export async function GET(request: Request) {
     );
   }
 }
+
+
+// DELETE - Delete All Expenses
+export async function DELETE() {
+  try {
+    // 1. Authenticate user
+    const userId = await requireAuth();
+
+    if (!userId) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Unauthorized",
+        },
+        { status: 401 }
+      );
+    }
+
+    // 2. Delete only the logged-in user's expenses
+    const result = await prisma.expense.deleteMany({
+      where: {
+        userId,
+      },
+    });
+
+    // 3. Return the result
+    return NextResponse.json({
+      success: true,
+      message: "All expenses deleted successfully",
+      deletedCount: result.count,
+    });
+  } catch (error) {
+    console.error("Delete all expenses error:", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Something went wrong",
+      },
+      { status: 500 }
+    );
+  }
+}

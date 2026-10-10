@@ -1,4 +1,4 @@
-@import "tailwindcss";
+/* @import "tailwindcss";
 
 :root {
   --background: #ffffff;
@@ -23,4 +23,110 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+} */
+
+
+@import "tailwindcss";
+
+/* Use the .dark class controlled by next-themes */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  color-scheme: light;
+  --background: #f8f7f2;
+  --foreground: #171717;
+  --card: #ffffff;
+  --border: #e3dfd5;
+  --muted: #6f6b63;
+  --input: #ffffff;
+}
+
+.dark {
+  color-scheme: dark;
+  --background: #111111;
+  --foreground: #ededed;
+  --card: #1c1c1c;
+  --border: #383838;
+  --muted: #aaa49a;
+  --input: #252525;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.dark [class~="bg-white"],
+.dark [class*="bg-white/"] {
+  background-color: var(--card) !important;
+}
+
+.dark [class*="bg-[#F8F7F2]"] {
+  background-color: var(--background) !important;
+}
+
+.dark [class*="bg-[#E5E0D5]"],
+.dark [class*="bg-[#E9E6DE]"],
+.dark [class*="bg-[#DDD9CF]"] {
+  background-color: #303030 !important;
+}
+
+.dark [class*="bg-[#FFF0E2]"],
+.dark [class*="bg-[#FFF0E3]"],
+.dark [class*="bg-[#FFF0E5]"],
+.dark [class*="bg-[#FFF1E4]"],
+.dark [class*="bg-[#FFE9E3]"] {
+  background-color: #352417 !important;
+}
+
+.dark [class*="bg-[#E8F6EF]"],
+.dark [class*="bg-[#F1F8EF]"] {
+  background-color: #183325 !important;
+}
+
+.dark [class*="bg-[#D9E2DC]"] {
+  background-color: #414141 !important;
+}
+
+.dark [class*="border-[#C0B9A7]"],
+.dark [class*="border-[#D8D4C9]"],
+.dark [class*="border-[#D9E4DD]"],
+.dark [class*="border-[#DDD9CF]"],
+.dark [class*="border-[#E3DFD5]"],
+.dark [class*="border-[#E5E0D5]"],
+.dark [class*="border-[#EEEAE1]"],
+.dark [class*="border-[#F0EDE6]"] {
+  border-color: var(--border) !important;
+}
+
+.dark [class~="text-black"] {
+  color: var(--foreground) !important;
+}
+
+.dark [class*="text-[#68766D]"],
+.dark [class*="text-[#6F6B63]"],
+.dark [class*="text-[#777269]"],
+.dark [class*="text-[#8A857B]"],
+.dark [class*="text-[#AAA59A]"] {
+  color: var(--muted) !important;
+}
+
+.dark input,
+.dark select,
+.dark textarea {
+  background-color: var(--input);
+  color-scheme: dark;
 }

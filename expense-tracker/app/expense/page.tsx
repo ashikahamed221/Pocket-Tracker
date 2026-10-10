@@ -1,7 +1,13 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { ArrowUpRight, CalendarDays, Wallet } from "lucide-react";
+import {
+    ArrowUpRight,
+    CalendarDays,
+    Wallet,
+    Plus,
+    Tag,
+} from "lucide-react";
 
 import DashboardLayout from "@/src/components/dashboard/DashboardLayout";
 
@@ -258,6 +264,49 @@ export default function ExpensePage() {
         }
     }
 
+
+    const handleDeleteAllExpenses = async () => {
+        if (expenses.length === 0) {
+            setError("No expenses to delete.");
+            return;
+        }
+
+        const confirmed = window.confirm(
+            `Are you sure you want to delete all ${expenses.length} expenses? This action cannot be undone.`
+        );
+
+        if (!confirmed) return;
+
+        setActionLoading(true);
+        setError("");
+        setMessage("");
+
+        try {
+            const response = await fetch("/api/expenses", {
+                method: "DELETE",
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || "Failed to delete expenses.");
+            }
+
+            setExpenses([]);
+            setEditingExpense(null);
+            setMessage(`${data.deletedCount} expenses deleted successfully.`);
+        } catch (error) {
+            setError(
+                error instanceof Error
+                    ? error.message
+                    : "Something went wrong."
+            );
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+
     return (
         <DashboardLayout>
             <main className="min-h-screen bg-[#F8F7F2] p-5 pb-24 md:p-8 lg:pb-8">
@@ -329,6 +378,7 @@ export default function ExpensePage() {
                                 </div>
                             </div>
 
+                            
                             {/* Category */}
                             <div>
                                 <label
@@ -338,32 +388,79 @@ export default function ExpensePage() {
                                     Category
                                 </label>
 
-                                <select
-                                    id="category"
-                                    value={categoryId}
-                                    onChange={(event) =>
-                                        setCategoryId(event.target.value)
-                                    }
-                                    required
-                                    disabled={loadingCategories}
-                                    className="w-full rounded-xl border border-[#D8D4C9] bg-white px-4 py-3 text-sm text-black outline-none transition focus:border-[#FF3B0A] focus:ring-2 focus:ring-[#FF3B0A]/10 disabled:cursor-not-allowed disabled:bg-[#F8F7F2]"
-                                >
-                                    <option value="">
-                                        {loadingCategories
-                                            ? "Loading categories..."
-                                            : "Select a category"}
-                                    </option>
+                                {loadingCategories ? (
+                                    <div className="flex items-center gap-3 rounded-xl border border-[#D8D4C9] bg-[#F8F7F2] px-4 py-4">
+                                        <div className="h-5 w-5 animate-pulse rounded-full bg-[#DDD9CF]" />
+                                        <p className="text-sm text-[#777269]">
+                                            Loading categories...
+                                        </p>
+                                    </div>
+                                ) : categories.length === 0 ? (
+                                    <div className="rounded-2xl border border-dashed border-[#D8D4C9] bg-[#F8F7F2] p-5">
+                                        <div className="flex items-start gap-3">
+                                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white">
+                                                <Tag className="h-5 w-5 text-[#FF3B0A]" />
+                                            </div>
 
-                                    {categories.map((category) => (
-                                        <option
-                                            key={category.id}
-                                            value={category.id}
+                                            <div className="min-w-0 flex-1">
+                                                <p className="font-medium text-black">
+                                                    No expense categories yet
+                                                </p>
+
+                                                <p className="mt-1 text-sm leading-5 text-[#777269]">
+                                                    Create your first category to start recording expenses.
+                                                </p>
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        window.location.href = "/settings";
+                                                    }}
+                                                    className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#FF3B0A] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#E83205]"
+                                                >
+                                                    <Plus className="h-4 w-4" />
+                                                    Create Category
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <select
+                                            id="category"
+                                            value={categoryId}
+                                            onChange={(event) =>
+                                                setCategoryId(event.target.value)
+                                            }
+                                            required
+                                            className="w-full rounded-xl border border-[#D8D4C9] bg-white px-4 py-3 text-sm text-black outline-none transition focus:border-[#FF3B0A] focus:ring-2 focus:ring-[#FF3B0A]/10"
                                         >
-                                            {category.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                            <option value="">Select a category</option>
+
+                                            {categories.map((category) => (
+                                                <option
+                                                    key={category.id}
+                                                    value={category.id}
+                                                >
+                                                    {category.name}
+                                                </option>
+                                            ))}
+                                        </select>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                window.location.href = "/settings";
+                                            }}
+                                            className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-[#777269] transition hover:text-[#FF3B0A]"
+                                        >
+                                            <Plus className="h-3.5 w-3.5" />
+                                            Manage categories
+                                        </button>
+                                    </>
+                                )}
                             </div>
+                            
 
                             {/* Date */}
                             <div>
@@ -586,17 +683,38 @@ export default function ExpensePage() {
 
                 {/* // fetch and display expenses */}
 
-                {/* Expense History */}
-                <div className="mt-8">
-                    <div className="mb-4">
-                        <h2 className="text-xl font-semibold text-black">
-                            Expense History
-                        </h2>
 
-                        <p className="mt-1 text-sm text-[#6F6B63]">
-                            Your recent expenses.
-                        </p>
+
+
+
+                {/* Expense History */}
+                <div className="mt-8 md:p-20">
+
+
+                    <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h2 className="text-xl font-semibold text-black">
+                                Expense History
+                            </h2>
+
+                            <p className="mt-1 text-sm text-[#6F6B63]">
+                                Your recent expenses.
+                            </p>
+                        </div>
+
+                        {expenses.length > 0 && (
+                            <button
+                                type="button"
+                                onClick={handleDeleteAllExpenses}
+                                disabled={actionLoading || loadingExpenses}
+                                className="w-full rounded-lg border border-[#FFD2C8] px-3 py-2 text-sm font-medium text-[#FF3B0A] transition hover:bg-[#FFE9E3] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                            >
+                                {actionLoading ? "Please wait..." : "Delete All Expenses"}
+                            </button>
+                        )}
                     </div>
+
+
 
                     {loadingExpenses ? (
                         <div className="rounded-2xl border border-[#DDD9CF] bg-white p-6 text-center text-sm text-[#6F6B63]">
@@ -607,85 +725,253 @@ export default function ExpensePage() {
                             No expenses found.
                         </div>
                     ) : (
+                        // <div className="space-y-3">
+                        //     {expenses.map((expense) => (
+                        //         <div
+                        //             key={expense.id}
+                        //             className="flex items-center justify-between rounded-2xl border border-[#DDD9CF] bg-white p-4 shadow-sm"
+                        //         >
+                        //             <div className="flex min-w-0 items-center gap-3">
+                        //                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#FFE9E3]">
+                        //                     <ArrowUpRight className="h-4 w-4 text-[#FF3B0A]" />
+                        //                 </div>
+
+                        //                 <div className="min-w-0">
+                        //                     <p className="font-medium text-black">
+                        //                         {expense.category.name}
+                        //                     </p>
+
+                        //                     <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[#777269]">
+                        //                         <span>
+                        //                             {new Date(
+                        //                                 expense.date
+                        //                             ).toLocaleDateString("en-IN", {
+                        //                                 day: "2-digit",
+                        //                                 month: "short",
+                        //                                 year: "numeric",
+                        //                             })}
+                        //                         </span>
+
+                        //                         {expense.note && (
+                        //                             <>
+                        //                                 <span>•</span>
+                        //                                 <span className="truncate">
+                        //                                     {expense.note}
+                        //                                 </span>
+                        //                             </>
+                        //                         )}
+                        //                     </div>
+                        //                 </div>
+                        //             </div>
+
+                        //             <div className="ml-4 flex shrink-0 items-center gap-3">
+                        //                 <p className="font-semibold text-[#FF3B0A]">
+                        //                     -₹
+                        //                     {Number(expense.amount).toLocaleString("en-IN")}
+                        //                 </p>
+
+                        //                 <button
+                        //                     type="button"
+                        //                     onClick={() => {
+                        //                         setEditingExpense(expense);
+                        //                         setEditAmount(expense.amount.toString());
+                        //                         setEditCategoryId(expense.category.id);
+                        //                         setEditDate(
+                        //                             new Date(expense.date)
+                        //                                 .toISOString()
+                        //                                 .split("T")[0]
+                        //                         );
+                        //                         setEditNote(expense.note || "");
+                        //                         setMessage("");
+                        //                         setError("");
+                        //                     }}
+                        //                     className="rounded-lg border border-[#D8D4C9] px-3 py-1.5 text-xs font-medium text-[#6F6B63] transition hover:border-[#FF8315] hover:text-[#FF8315]"
+                        //                 >
+                        //                     Edit
+                        //                 </button>
+
+                        //                 <button
+                        //                     type="button"
+                        //                     disabled={actionLoading}
+                        //                     onClick={() =>
+                        //                         handleDeleteExpense(expense.id)
+                        //                     }
+                        //                     className="rounded-lg border border-[#FFD2C8] px-3 py-1.5 text-xs font-medium text-[#FF3B0A] transition hover:bg-[#FFE9E3] disabled:opacity-50"
+                        //                 >
+                        //                     Delete
+                        //                 </button>
+                        //             </div>
+                        //         </div>
+                        //     ))}
+                        // </div>
+
+
+                        // <div className="space-y-3">
+                        //     {expenses.map((expense) => (
+                        //         <div
+                        //             key={expense.id}
+                        //             className="rounded-2xl border border-[#DDD9CF] bg-white p-3 shadow-sm sm:p-4"
+                        //         >
+                        //             {/* Expense details and amount */}
+                        //             <div className="flex min-w-0 items-start justify-between gap-3">
+                        //                 <div className="flex min-w-0 flex-1 items-center gap-3">
+                        //                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#FFE9E3]">
+                        //                         <ArrowUpRight className="h-4 w-4 text-[#FF3B0A]" />
+                        //                     </div>
+
+                        //                     <div className="min-w-0 flex-1">
+                        //                         <p className="truncate font-medium text-black">
+                        //                             {expense.category.name}
+                        //                         </p>
+
+                        //                         <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-[#777269]">
+                        //                             <span>
+                        //                                 {new Date(expense.date).toLocaleDateString("en-IN", {
+                        //                                     day: "2-digit",
+                        //                                     month: "short",
+                        //                                     year: "numeric",
+                        //                                 })}
+                        //                             </span>
+
+                        //                             {expense.note && (
+                        //                                 <>
+                        //                                     <span>•</span>
+                        //                                     <span className="min-w-0 break-words">
+                        //                                         {expense.note}
+                        //                                     </span>
+                        //                                 </>
+                        //                             )}
+                        //                         </div>
+                        //                     </div>
+                        //                 </div>
+
+                        //                 <p className="shrink-0 whitespace-nowrap text-sm font-semibold text-[#FF3B0A] sm:text-base">
+                        //                     -₹
+                        //                     {Number(expense.amount).toLocaleString("en-IN", {
+                        //                         minimumFractionDigits: 2,
+                        //                         maximumFractionDigits: 2,
+                        //                     })}
+                        //                 </p>
+                        //             </div>
+
+                        //             {/* Actions */}
+                        //             <div className="mt-4 flex gap-2 border-t border-[#F0EDE6] pt-3">
+                        //                 <button
+                        //                     type="button"
+                        //                     onClick={() => {
+                        //                         setEditingExpense(expense);
+                        //                         setEditAmount(expense.amount.toString());
+                        //                         setEditCategoryId(expense.category.id);
+                        //                         setEditDate(
+                        //                             new Date(expense.date).toISOString().split("T")[0]
+                        //                         );
+                        //                         setEditNote(expense.note || "");
+                        //                         setMessage("");
+                        //                         setError("");
+                        //                     }}
+                        //                     className="flex-1 rounded-lg border border-[#D8D4C9] px-3 py-2 text-sm font-medium text-[#6F6B63] transition hover:border-[#FF8315] hover:text-[#FF8315]"
+                        //                 >
+                        //                     Edit
+                        //                 </button>
+
+                        //                 <button
+                        //                     type="button"
+                        //                     disabled={actionLoading}
+                        //                     onClick={() => handleDeleteExpense(expense.id)}
+                        //                     className="flex-1 rounded-lg border border-[#FFD2C8] px-3 py-2 text-sm font-medium text-[#FF3B0A] transition hover:bg-[#FFE9E3] disabled:opacity-50"
+                        //                 >
+                        //                     {actionLoading ? "Please wait..." : "Delete"}
+                        //                 </button>
+                        //             </div>
+                        //         </div>
+                        //     ))}
+                        // </div>
+
+
                         <div className="space-y-3">
                             {expenses.map((expense) => (
                                 <div
                                     key={expense.id}
-                                    className="flex items-center justify-between rounded-2xl border border-[#DDD9CF] bg-white p-4 shadow-sm"
+                                    className="rounded-2xl border border-[#DDD9CF] bg-white p-4 shadow-sm transition hover:border-[#C0B9A7] sm:p-5"
                                 >
-                                    <div className="flex min-w-0 items-center gap-3">
-                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#FFE9E3]">
-                                            <ArrowUpRight className="h-4 w-4 text-[#FF3B0A]" />
+                                    <div className="flex items-start gap-4">
+                                        {/* Icon */}
+                                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#FFE9E3]">
+                                            <ArrowUpRight className="h-5 w-5 text-[#FF3B0A]" />
                                         </div>
 
-                                        <div className="min-w-0">
-                                            <p className="font-medium text-black">
-                                                {expense.category.name}
-                                            </p>
+                                        {/* Expense details */}
+                                        <div className="min-w-0 flex-1">
+                                            <div className="flex items-end justify-between gap-3">
+                                                <div className="min-w-0">
+                                                    <p className="truncate font-medium text-black">
+                                                        {expense.category.name}
+                                                    </p>
 
-                                            <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[#777269]">
-                                                <span>
-                                                    {new Date(
-                                                        expense.date
-                                                    ).toLocaleDateString("en-IN", {
-                                                        day: "2-digit",
-                                                        month: "short",
-                                                        year: "numeric",
-                                                    })}
-                                                </span>
+                                                    <p className="mt-1 text-sm text-[#777269]">
+                                                        {new Date(expense.date).toLocaleDateString("en-IN", {
+                                                            day: "2-digit",
+                                                            month: "short",
+                                                            year: "numeric",
+                                                        })}
+                                                    </p>
 
-                                                {expense.note && (
-                                                    <>
-                                                        <span>•</span>
-                                                        <span className="truncate">
+                                                    {expense.note && (
+                                                        <p className="mt-1 break-words text-sm text-[#777269]">
                                                             {expense.note}
-                                                        </span>
-                                                    </>
-                                                )}
+                                                        </p>
+                                                    )}
+                                                </div>
+
+                                                {/* Amount */}
+                                                <p className="shrink-0 text-base font-semibold text-[#FF3B0A]">
+                                                    -{Number(expense.amount).toLocaleString("en-IN", {
+                                                        style: "currency",
+                                                        currency: "INR",
+                                                        minimumFractionDigits: 0,
+                                                        maximumFractionDigits: 2,
+                                                    })}
+                                                </p>
+                                            </div>
+
+                                            {/* Actions - same position as Income History */}
+                                            <div className="mt-4 flex items-center gap-2">
+                                                {/* Edit */}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setEditingExpense(expense);
+                                                        setEditAmount(expense.amount.toString());
+                                                        setEditCategoryId(expense.category.id);
+                                                        setEditDate(
+                                                            new Date(expense.date).toISOString().split("T")[0]
+                                                        );
+                                                        setEditNote(expense.note || "");
+                                                        setMessage("");
+                                                        setError("");
+                                                    }}
+                                                    className="rounded-lg border border-[#D8D4C9] px-3 py-1.5 text-xs font-medium text-[#6F6B63] transition hover:border-[#FF8315] hover:text-[#FF8315]"
+                                                >
+                                                    Edit
+                                                </button>
+
+                                                {/* Delete */}
+                                                <button
+                                                    type="button"
+                                                    disabled={actionLoading}
+                                                    onClick={() => handleDeleteExpense(expense.id)}
+                                                    className="rounded-lg border border-[#FFD2C8] px-3 py-1.5 text-xs font-medium text-[#FF3B0A] transition hover:bg-[#FFE9E3] disabled:opacity-50"
+                                                >
+                                                    Delete
+                                                </button>
                                             </div>
                                         </div>
-                                    </div>
-
-                                    <div className="ml-4 flex shrink-0 items-center gap-3">
-                                        <p className="font-semibold text-[#FF3B0A]">
-                                            -₹
-                                            {Number(expense.amount).toLocaleString("en-IN")}
-                                        </p>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                setEditingExpense(expense);
-                                                setEditAmount(expense.amount.toString());
-                                                setEditCategoryId(expense.category.id);
-                                                setEditDate(
-                                                    new Date(expense.date)
-                                                        .toISOString()
-                                                        .split("T")[0]
-                                                );
-                                                setEditNote(expense.note || "");
-                                                setMessage("");
-                                                setError("");
-                                            }}
-                                            className="rounded-lg border border-[#D8D4C9] px-3 py-1.5 text-xs font-medium text-[#6F6B63] transition hover:border-[#FF8315] hover:text-[#FF8315]"
-                                        >
-                                            Edit
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            disabled={actionLoading}
-                                            onClick={() =>
-                                                handleDeleteExpense(expense.id)
-                                            }
-                                            className="rounded-lg border border-[#FFD2C8] px-3 py-1.5 text-xs font-medium text-[#FF3B0A] transition hover:bg-[#FFE9E3] disabled:opacity-50"
-                                        >
-                                            Delete
-                                        </button>
                                     </div>
                                 </div>
                             ))}
                         </div>
+
+
                     )}
                 </div>
             </main>

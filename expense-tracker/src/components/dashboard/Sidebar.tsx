@@ -12,10 +12,12 @@ import {
     Settings,
     Wallet,
     Moon,
+    Sun,
     LogOut,
 } from "lucide-react";
 
 import { signOut } from "next-auth/react";
+import { useTheme } from "@/src/components/ThemeProvider";
 
 const navigation = [
     {
@@ -52,6 +54,8 @@ const navigation = [
 
 export default function Sidebar() {
     const pathname = usePathname();
+    const { resolvedTheme, setTheme } = useTheme();
+    const isDarkMode = resolvedTheme === "dark";
 
     return (
         <>
@@ -89,7 +93,7 @@ export default function Sidebar() {
                                     href={item.href}
                                     className={`flex items-center gap-4 rounded-full px-4 py-3 text-sm font-medium transition ${isActive
                                         ? "bg-[#FF8315] text-white"
-                                        : "text-gray-300 hover:bg-white/10 hover:text-white"
+                                        : "text-gray-300  hover:text-white"
                                         }`}
                                 >
                                     <Icon className="h-5 w-5" />
@@ -104,11 +108,20 @@ export default function Sidebar() {
                     <div className="mt-auto space-y-2">
                         <button
                             type="button"
+                            aria-label={`Switch to ${isDarkMode ? "light" : "dark"} mode`}
+                            aria-pressed={isDarkMode}
+                            onClick={() =>
+                                setTheme(isDarkMode ? "light" : "dark")
+                            }
                             className="flex w-full items-center gap-4 rounded-full px-4 py-3 text-sm font-medium text-gray-300 transition hover:bg-white/10 hover:text-white"
                         >
-                            <Moon className="h-5 w-5" />
+                            {isDarkMode ? (
+                                <Sun className="h-5 w-5" />
+                            ) : (
+                                <Moon className="h-5 w-5" />
+                            )}
 
-                            <span>Dark mode</span>
+                            <span>{isDarkMode ? "Light mode" : "Dark mode"}</span>
                         </button>
 
                         <button

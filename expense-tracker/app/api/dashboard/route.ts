@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { prisma } from "@/src/lib/prisma";
 import { requireAuth } from "@/src/lib/require-auth";
+import { redis } from "@/src/lib/redis";
 
 const dashboardQuerySchema = z
   .object({
@@ -84,6 +85,25 @@ export async function GET(request: Request) {
         { status: 400 }
       );
     }
+
+
+    const cachePeriod =
+      result.data.from && result.data.to
+        ? `range:${result.data.from}:${result.data.to}`
+        : `month:${result.data.month ?? new Date().toISOString().slice(0, 7)}`;
+
+    const cacheKey = `dashboard:${userId}:${cachePeriod}`;
+
+    const cachedDashboard = await redis.get(cacheKey);
+
+    if (cachedDashboard) {
+      return NextResponse.json(cachedDashboard, {
+        headers: {
+          "X-Cache": "HIT",
+        },
+      });
+    }
+
 
     // --------------------------------
     // 3. Determine selected month
@@ -502,28 +522,37 @@ export async function GET(request: Request) {
     // 14. Final response
     // --------------------------------
 
-    return NextResponse.json({
-      success: true,
+    
+const dashboardData = {
+  success: true,
 
-      period: {
-        month: selectedMonth + 1,
-        year: selectedYear,
-      },
+  period: {
+    month: selectedMonth + 1,
+    year: selectedYear,
+  },
 
-      summary: {
-        income: totalIncome,
-        expenses: totalExpenses,
-        savings: totalSavings,
-      },
+  summary: {
+    income: totalIncome,
+    expenses: totalExpenses,
+    savings: totalSavings,
+  },
 
-      today,
+  today,
+  dailySummary,
+  last7Days,
+  expensesByCategory: categoryBreakdown,
+};
 
-      dailySummary,
+await redis.set(cacheKey, dashboardData, {
+  ex: 60,
+});
 
-      last7Days,
+return NextResponse.json(dashboardData, {
+  headers: {
+    "X-Cache": "MISS",
+  },
+});
 
-      expensesByCategory: categoryBreakdown,
-    });
   } catch (error) {
     console.error("Dashboard error:", error);
 

@@ -404,7 +404,7 @@ export default function DashboardPage() {
                             <div className="flex items-start justify-between">
                                 <div>
                                     <p className="text-sm font-medium uppercase tracking-wide text-[#6F6B63]">
-                                        Savings
+                                        Remaining Balance
                                     </p>
 
                                     <h2 className="mt-7 text-2xl font-semibold text-black">
@@ -414,7 +414,7 @@ export default function DashboardPage() {
                                     </h2>
 
                                     <p className="mt-2 text-sm text-[#777269]">
-                                        Balance
+                                        This month
                                     </p>
                                 </div>
 
@@ -429,7 +429,7 @@ export default function DashboardPage() {
                             <div className="flex items-start justify-between">
                                 <div>
                                     <p className="text-sm font-medium uppercase tracking-wide text-[#6F6B63]">
-                                        Today
+                                        Today income
                                     </p>
 
                                     <h2 className="mt-7 text-2xl font-semibold text-black">
