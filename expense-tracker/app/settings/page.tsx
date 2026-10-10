@@ -97,6 +97,7 @@ export default function SettingsPage() {
     }, []);
 
 
+    
     useEffect(() => {
         async function fetchCategories() {
             try {
